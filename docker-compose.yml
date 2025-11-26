@@ -1,0 +1,170 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: los-postgres
+    environment:
+      POSTGRES_DB: los_db
+      POSTGRES_USER: los_user
+      POSTGRES_PASSWORD: los_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - los-network
+
+  # Zookeeper for Kafka
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: los-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - los-network
+
+  # Kafka
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: los-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    networks:
+      - los-network
+
+  # Keycloak for Authentication
+  keycloak:
+    image: quay.io/keycloak/keycloak:22.0
+    container_name: los-keycloak
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak_db
+      KC_DB_USERNAME: los_user
+      KC_DB_PASSWORD: los_password
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_STRICT: "false"
+      KC_HTTP_ENABLED: "true"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    command: start-dev
+    networks:
+      - los-network
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: los-api-gateway
+    ports:
+      - "8000:8000"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      - keycloak
+    networks:
+      - los-network
+
+  # Customer Service
+  customer-service:
+    build:
+      context: ./customer-service
+      dockerfile: Dockerfile
+    container_name: los-customer-service
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/los_db
+      SPRING_DATASOURCE_USERNAME: los_user
+      SPRING_DATASOURCE_PASSWORD: los_password
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    depends_on:
+      - postgres
+      - kafka
+    networks:
+      - los-network
+
+  # Loan Service
+  loan-service:
+    build:
+      context: ./loan-service
+      dockerfile: Dockerfile
+    container_name: los-loan-service
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/los_db
+      SPRING_DATASOURCE_USERNAME: los_user
+      SPRING_DATASOURCE_PASSWORD: los_password
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    depends_on:
+      - postgres
+      - kafka
+    networks:
+      - los-network
+
+  # Credit Engine Service
+  credit-engine-service:
+    build:
+      context: ./credit-engine-service
+      dockerfile: Dockerfile
+    container_name: los-credit-engine-service
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/los_db
+      SPRING_DATASOURCE_USERNAME: los_user
+      SPRING_DATASOURCE_PASSWORD: los_password
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    depends_on:
+      - postgres
+      - kafka
+    networks:
+      - los-network
+
+  # Notification Service
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
+    container_name: los-notification-service
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    depends_on:
+      - kafka
+    networks:
+      - los-network
+
+networks:
+  los-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

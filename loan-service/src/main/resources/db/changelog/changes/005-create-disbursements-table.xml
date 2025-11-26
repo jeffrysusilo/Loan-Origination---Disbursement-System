@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="005-create-disbursements-table" author="los-system">
+        <createTable tableName="disbursements" schemaName="loan">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="loan_id" type="BIGINT">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="amount" type="DECIMAL(15,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="disbursement_method" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="account_number" type="VARCHAR(50)"/>
+            <column name="account_name" type="VARCHAR(100)"/>
+            <column name="bank_code" type="VARCHAR(20)"/>
+            <column name="spk_file_path" type="VARCHAR(500)"/>
+            <column name="status" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="disbursed_at" type="TIMESTAMP"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableSchemaName="loan"
+                baseTableName="disbursements"
+                baseColumnNames="loan_id"
+                constraintName="fk_disbursements_loan"
+                referencedTableSchemaName="loan"
+                referencedTableName="loans"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+</databaseChangeLog>

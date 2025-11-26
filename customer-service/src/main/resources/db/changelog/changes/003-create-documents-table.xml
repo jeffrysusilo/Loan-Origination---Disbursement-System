@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="003-create-documents-table" author="los-system">
+        <createTable tableName="documents" schemaName="customer">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="customer_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="document_type" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="file_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="file_path" type="VARCHAR(500)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="mime_type" type="VARCHAR(100)"/>
+            <column name="file_size" type="BIGINT"/>
+            <column name="ocr_data" type="TEXT"/>
+            <column name="status" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uploaded_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableSchemaName="customer"
+                baseTableName="documents"
+                baseColumnNames="customer_id"
+                constraintName="fk_documents_customer"
+                referencedTableSchemaName="customer"
+                referencedTableName="customers"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+
+        <createIndex tableName="documents" schemaName="customer" indexName="idx_documents_customer_id">
+            <column name="customer_id"/>
+        </createIndex>
+
+        <createIndex tableName="documents" schemaName="customer" indexName="idx_documents_type">
+            <column name="document_type"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

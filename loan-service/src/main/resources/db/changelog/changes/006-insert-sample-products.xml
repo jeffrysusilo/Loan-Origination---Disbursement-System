@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="006-insert-sample-products" author="los-system">
+        <sql>
+            INSERT INTO loan.loan_products (product_name, description, product_type, min_amount, max_amount, min_tenor, max_tenor, interest_rate, is_active, created_at, updated_at)
+            VALUES
+            ('Kredit Motor', 'Pembiayaan untuk pembelian sepeda motor baru dan bekas', 'MOTOR', 5000000, 50000000, 6, 36, 12.5, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+            ('Kredit Mobil', 'Pembiayaan untuk pembelian mobil baru dan bekas', 'MOBIL', 50000000, 500000000, 12, 60, 10.5, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+            ('Kredit Multiguna', 'Pembiayaan untuk berbagai kebutuhan', 'MULTIGUNA', 10000000, 200000000, 12, 48, 15.0, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

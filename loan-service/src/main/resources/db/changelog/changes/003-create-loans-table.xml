@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="003-create-loans-table" author="los-system">
+        <createTable tableName="loans" schemaName="loan">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="customer_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="requested_amount" type="DECIMAL(15,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="approved_amount" type="DECIMAL(15,2)"/>
+            <column name="tenor" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="down_payment" type="DECIMAL(15,2)"/>
+            <column name="interest_rate" type="DECIMAL(5,2)"/>
+            <column name="monthly_installment" type="DECIMAL(15,2)"/>
+            <column name="total_payment" type="DECIMAL(15,2)"/>
+            <column name="purpose" type="VARCHAR(500)"/>
+            <column name="status" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="remarks" type="VARCHAR(1000)"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="approved_at" type="TIMESTAMP"/>
+            <column name="disbursed_at" type="TIMESTAMP"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableSchemaName="loan"
+                baseTableName="loans"
+                baseColumnNames="product_id"
+                constraintName="fk_loans_product"
+                referencedTableSchemaName="loan"
+                referencedTableName="loan_products"
+                referencedColumnNames="id"/>
+
+        <createIndex tableName="loans" schemaName="loan" indexName="idx_loans_customer_id">
+            <column name="customer_id"/>
+        </createIndex>
+
+        <createIndex tableName="loans" schemaName="loan" indexName="idx_loans_status">
+            <column name="status"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
